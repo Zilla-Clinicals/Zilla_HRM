@@ -1,0 +1,43 @@
+# Render blueprint for the backend + managed Postgres.
+# The frontend deploys separately on Vercel (see frontend/vercel.json).
+services:
+  - type: web
+    name: zillahrm-backend
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install uv && uv sync --frozen
+    startCommand: uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    preDeployCommand: uv run alembic upgrade head
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: zillahrm-postgres
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: '["https://zillahrm.vercel.app"]'
+      - key: APP_BASE_URL
+        value: https://zillahrm.vercel.app
+      - key: COOKIE_SECURE
+        value: "true"
+      # Frontend (Vercel) and API (Render) are different sites, so the refresh
+      # cookie must be SameSite=None; Secure to be sent cross-site.
+      - key: COOKIE_SAMESITE
+        value: none
+      - key: EMAIL_PROVIDER
+        value: resend
+      - key: RESEND_API_KEY
+        sync: false # set in the Render dashboard
+      - key: EMAIL_FROM
+        value: HRM <noreply@zillaclinicals.com>
+
+databases:
+  - name: zillahrm-postgres
+    plan: free
+    postgresMajorVersion: "16"

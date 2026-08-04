@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply text-slate-700 antialiased;
+    font-feature-settings: "cv11", "ss01";
+    /* Layered, fixed app canvas:
+       1) a faint indigo dot-grid for texture
+       2) soft corner glows
+       3) a gently tinted base so white cards have depth */
+    background:
+      radial-gradient(circle at 1px 1px, rgba(79, 70, 229, 0.07) 1px, transparent 0) 0 0 / 24px 24px,
+      radial-gradient(1100px 560px at 100% -6%, rgba(199, 210, 254, 0.55) 0%, transparent 55%),
+      radial-gradient(900px 520px at -6% 6%, rgba(233, 213, 255, 0.5) 0%, transparent 52%),
+      linear-gradient(180deg, #f5f6fb 0%, #eceefb 100%);
+    background-attachment: fixed;
+  }
+  ::selection {
+    @apply bg-brand-200/70 text-brand-900;
+  }
+  /* Slim, modern scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-thumb {
+    @apply rounded-full border-2 border-solid border-transparent bg-slate-300 bg-clip-content;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-400;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm
+      font-semibold transition-all duration-200 ease-out
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2
+      active:scale-[.97] disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-brand-gradient text-white shadow-glow-sm
+      hover:-translate-y-0.5 hover:shadow-glow;
+  }
+  .btn-secondary {
+    @apply btn border border-slate-200 bg-white/80 text-slate-700 shadow-soft backdrop-blur
+      hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white hover:shadow-card;
+  }
+  .btn-danger {
+    @apply btn bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-glow-sm
+      hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-6px_rgba(244,63,94,.5)];
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-slate-200 bg-white/90 px-3.5 py-2 text-sm text-slate-800
+      shadow-sm outline-none transition
+      placeholder:text-slate-400
+      focus:border-brand-400 focus:ring-4 focus:ring-brand-100;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-slate-600;
+  }
+
+  .card {
+    @apply rounded-2xl border border-slate-200/80 bg-white shadow-card transition-all duration-300;
+  }
+  /* Clickable cards lift toward the pointer */
+  a.card:hover,
+  .card-interactive:hover {
+    @apply -translate-y-1 border-brand-200 shadow-card-hover;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold
+      ring-1 ring-inset ring-black/[.03];
+  }
+
+  .th {
+    @apply px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400;
+  }
+  .td {
+    @apply px-4 py-3 text-sm text-slate-700;
+  }
+
+  /* Frosted-glass surface (top bar, overlays) */
+  .glass {
+    @apply border-white/40 bg-white/70 backdrop-blur-xl;
+  }
+
+  /* Loading skeleton */
+  .skeleton {
+    @apply relative overflow-hidden rounded-lg bg-slate-100;
+  }
+  .skeleton::after {
+    content: "";
+    @apply absolute inset-0 bg-shimmer;
+    animation: shimmer 1.6s infinite;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-brand-gradient bg-clip-text text-transparent;
+  }
+  .page-enter {
+    @apply animate-fade-in-up;
+  }
+}
