@@ -1,0 +1,9 @@
+# Keep the serverless bundle small — none of these are needed at runtime.
+tests/
+scripts/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.env

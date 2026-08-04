@@ -1,0 +1,18 @@
+# Vercel's Python runtime installs from requirements.txt (it does NOT read
+# pyproject.toml / uv.lock). Keep this in sync with the runtime deps in
+# pyproject.toml. uvicorn is intentionally omitted — Vercel serves the ASGI app.
+fastapi>=0.115
+sqlalchemy[asyncio]>=2.0.36
+asyncpg>=0.30
+alembic>=1.14
+pydantic>=2.9
+pydantic-settings>=2.6
+email-validator>=2.2
+argon2-cffi>=23.1
+pyjwt>=2.10
+python-multipart>=0.0.12
+httpx>=0.27
+resend>=2.4
+slowapi>=0.1.9
+pyotp>=2.9
+redis>=5

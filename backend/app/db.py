@@ -11,9 +11,16 @@ from sqlalchemy.pool import NullPool
 
 from app.config import settings
 
-# Under pytest, each test runs in its own event loop. A pooled asyncpg connection
-# created in one loop cannot be reused in another, so disable pooling for tests.
-if os.getenv("TESTING") == "1":
+# Disable SQLAlchemy connection pooling when:
+#   - Under pytest: each test runs in its own event loop, and a pooled asyncpg
+#     connection created in one loop cannot be reused in another.
+#   - On Vercel (serverless): each function invocation is short-lived and may run
+#     in its own isolated instance. A per-instance pool would multiply across
+#     concurrent cold starts and exhaust Postgres connections. NullPool opens and
+#     closes one connection per checkout, which is the serverless-safe behavior.
+#     (Point DATABASE_URL at a pooled/serverless Postgres endpoint — e.g. Neon or
+#     Supabase's pooler — so the DB side tolerates many short connections.)
+if os.getenv("TESTING") == "1" or os.getenv("VERCEL"):
     engine = create_async_engine(settings.database_url, poolclass=NullPool, future=True)
 else:
     engine = create_async_engine(settings.database_url, pool_pre_ping=True, future=True)

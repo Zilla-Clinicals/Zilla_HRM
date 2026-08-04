@@ -46,6 +46,11 @@ class Settings(BaseSettings):
     rate_limit_enabled: bool = True
     login_rate_limit: str = "10/minute"
     sensitive_rate_limit: str = "5/minute"  # forgot / reset / accept-invite
+    # Shared rate-limit storage. Empty => in-memory (correct only for a single
+    # instance). On serverless / multi-instance, set to a Redis URI (e.g. Upstash
+    # `rediss://default:<pwd>@<host>:<port>`) so per-IP counters are shared across
+    # instances. Consumed by slowapi/limits as its storage backend.
+    rate_limit_storage_uri: str = ""
 
     # File storage
     storage_backend: str = "db"  # "db" (in-Postgres) — swap for "s3" later
