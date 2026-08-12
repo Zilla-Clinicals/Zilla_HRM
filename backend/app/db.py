@@ -20,10 +20,22 @@ from app.config import settings
 #     closes one connection per checkout, which is the serverless-safe behavior.
 #     (Point DATABASE_URL at a pooled/serverless Postgres endpoint — e.g. Neon or
 #     Supabase's pooler — so the DB side tolerates many short connections.)
+_connect_args = settings.db_connect_args
+
 if os.getenv("TESTING") == "1" or os.getenv("VERCEL"):
-    engine = create_async_engine(settings.database_url, poolclass=NullPool, future=True)
+    engine = create_async_engine(
+        settings.sqlalchemy_url,
+        poolclass=NullPool,
+        connect_args=_connect_args,
+        future=True,
+    )
 else:
-    engine = create_async_engine(settings.database_url, pool_pre_ping=True, future=True)
+    engine = create_async_engine(
+        settings.sqlalchemy_url,
+        pool_pre_ping=True,
+        connect_args=_connect_args,
+        future=True,
+    )
 
 async_session_factory = async_sessionmaker(
     engine, expire_on_commit=False, class_=AsyncSession

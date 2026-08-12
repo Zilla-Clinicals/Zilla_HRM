@@ -1,9 +1,18 @@
 from functools import lru_cache
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PLACEHOLDER_JWT_SECRET = "change-me-to-a-random-64-char-string"
+
+# Query params that libpq/psql accept in a connection URL but asyncpg does NOT —
+# Neon (and other managed Postgres) hand out URLs containing these, and asyncpg
+# raises on the unknown kwargs. We strip them from the URL and re-express TLS via
+# connect args instead (see Settings.db_connect_args).
+_LIBPQ_ONLY_QUERY_PARAMS = frozenset(
+    {"sslmode", "channel_binding", "connect_timeout", "gssencmode", "options"}
+)
 
 
 class Settings(BaseSettings):
@@ -66,6 +75,30 @@ class Settings(BaseSettings):
     @property
     def cookie_domain_or_none(self) -> str | None:
         return self.cookie_domain or None
+
+    @property
+    def sqlalchemy_url(self) -> str:
+        """`database_url` with libpq-only query params (sslmode, channel_binding,
+        …) stripped so asyncpg can parse it. TLS and pooler tuning move to
+        `db_connect_args`. Use this everywhere an engine is built."""
+        parts = urlsplit(self.database_url)
+        kept = [
+            (k, v)
+            for k, v in parse_qsl(parts.query, keep_blank_values=True)
+            if k not in _LIBPQ_ONLY_QUERY_PARAMS
+        ]
+        return urlunsplit(parts._replace(query=urlencode(kept)))
+
+    @property
+    def db_connect_args(self) -> dict:
+        """asyncpg connect args by target. For any non-local host we require TLS
+        (Neon and most managed Postgres do) and set statement_cache_size=0 so a
+        pooled PgBouncer endpoint can't raise 'prepared statement already exists'.
+        Local Postgres/sqlite get no extra args."""
+        host = (urlsplit(self.database_url).hostname or "").lower()
+        if host in ("", "localhost", "127.0.0.1", "::1"):
+            return {}
+        return {"ssl": "require", "statement_cache_size": 0}
 
     @model_validator(mode="after")
     def _guard_production(self) -> "Settings":
