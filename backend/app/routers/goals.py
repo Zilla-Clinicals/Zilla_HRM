@@ -16,6 +16,7 @@ from app.schemas.goals import (
     GoalOut,
     GoalUpdate,
 )
+from app.services import audit
 
 router = APIRouter(prefix="/api", tags=["goals"])
 
@@ -104,6 +105,15 @@ async def create_goal(
         target_date=payload.target_date,
     )
     db.add(goal)
+    await db.flush()  # assign goal.id for the audit entry
+    await audit.record(
+        db,
+        actor_user_id=user.id,
+        action="goal.create",
+        target_type="goal",
+        target_id=goal.id,
+        detail={"title": goal.title, "year": goal.year},
+    )
     await db.commit()
     await db.refresh(goal)
     return _goal_out(goal, me.full_name, 0)
@@ -162,8 +172,17 @@ async def update_goal(
     me = await _my_employee(db, user)
     if goal.employee_id != me.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "You can only edit your own goals")
-    for field, value in payload.model_dump(exclude_unset=True).items():
+    changed = payload.model_dump(exclude_unset=True)
+    for field, value in changed.items():
         setattr(goal, field, value)
+    await audit.record(
+        db,
+        actor_user_id=user.id,
+        action="goal.update",
+        target_type="goal",
+        target_id=goal.id,
+        detail={"fields": sorted(changed.keys())},
+    )
     await db.commit()
     await db.refresh(goal)
     return _goal_out(goal, me.full_name, await _one_count(db, goal.id))
@@ -183,6 +202,14 @@ async def delete_goal(
     me = await _my_employee(db, user)
     if goal.employee_id != me.id and not can(user.role, Cap.VIEW_ORG):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Forbidden")
+    await audit.record(
+        db,
+        actor_user_id=user.id,
+        action="goal.delete",
+        target_type="goal",
+        target_id=goal.id,
+        detail={"title": goal.title},
+    )
     await db.delete(goal)
     await db.commit()
 

@@ -11,6 +11,7 @@ from app.models.reviews import ReviewAssignment, ReviewCycle, ReviewScore
 from app.models.users import User
 from app.schemas.employees import EmployeeOut, EmployeeStatus, EmployeeUpdate
 from app.schemas.reviews import ReviewHistoryItem, ScoreOut
+from app.services import audit
 from app.services.documents import employees_with_photo, has_photo
 from app.services.reviews import weighted_total
 
@@ -140,6 +141,16 @@ async def update_employee(
 
     for field, value in data.items():
         setattr(target, field, value)
+    # Audit the biodata change. Log which fields changed, not their values, to
+    # keep employee PII out of the audit trail.
+    await audit.record(
+        db,
+        actor_user_id=user.id,
+        action="employee.update",
+        target_type="employee",
+        target_id=target.id,
+        detail={"fields": sorted(data.keys())},
+    )
     await db.commit()
     await db.refresh(target)
     return _out(
