@@ -20,7 +20,7 @@ export function ScoreDistribution({ data }: { data: StatusBucket[] }) {
           cursor={{ fill: "#f1f5f9" }}
           contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }}
         />
-        <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="count" fill="#3f8a63" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );

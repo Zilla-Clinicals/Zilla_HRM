@@ -16,39 +16,44 @@ export default {
         ],
       },
       colors: {
+        // Zilla Clinicals brand — deep forest green (see zillaclinicals.com).
+        // Anchors 50/100/400/600/700/800 are exact colors lifted from the site
+        // + logo; the rest are derived tints for a smooth scale.
         brand: {
-          50: "#eef2ff",
-          100: "#e0e7ff",
-          200: "#c7d2fe",
-          300: "#a5b4fc",
-          400: "#818cf8",
-          500: "#6366f1",
-          600: "#4f46e5",
-          700: "#4338ca",
-          800: "#3730a3",
-          900: "#312e81",
+          50: "#f3f9f6",
+          100: "#e9f4ee",
+          200: "#c8e0d5",
+          300: "#9dc7b5",
+          400: "#77a692",
+          500: "#3f8a63",
+          600: "#06512c",
+          700: "#0c4820",
+          800: "#0d2611",
+          900: "#08210c",
         },
+        // Zilla accent — peach/apricot (the "Contact Us" CTA + section eyebrows).
         accent: {
-          400: "#c084fc",
-          500: "#a855f7",
-          600: "#9333ea",
+          300: "#ffd9bf",
+          400: "#fcb07e",
+          500: "#f9955a",
+          600: "#f45a2a",
         },
       },
       backgroundImage: {
-        "brand-gradient": "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)",
-        "brand-gradient-soft": "linear-gradient(135deg, #eef2ff 0%, #faf5ff 100%)",
+        "brand-gradient": "linear-gradient(135deg, #0c4820 0%, #06512c 55%, #3f8a63 100%)",
+        "brand-gradient-soft": "linear-gradient(135deg, #f3f9f6 0%, #e9f4ee 100%)",
         "app-bg":
-          "radial-gradient(1200px 600px at 100% -10%, #eef2ff 0%, transparent 55%), radial-gradient(900px 500px at -10% 10%, #faf5ff 0%, transparent 50%)",
-        "sidebar-gradient": "linear-gradient(180deg, #4f46e5 0%, #6d28d9 100%)",
+          "radial-gradient(1200px 600px at 100% -10%, #f3f9f6 0%, transparent 55%), radial-gradient(900px 500px at -10% 10%, #e9f4ee 0%, transparent 50%)",
+        "sidebar-gradient": "linear-gradient(180deg, #0d2611 0%, #0c4820 100%)",
         shimmer:
           "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%)",
       },
       boxShadow: {
         soft: "0 1px 2px rgba(16,24,40,.04), 0 4px 16px rgba(16,24,40,.06)",
         card: "0 1px 3px rgba(16,24,40,.05), 0 12px 32px -14px rgba(16,24,40,.14)",
-        "card-hover": "0 2px 6px rgba(16,24,40,.06), 0 20px 40px -16px rgba(79,70,229,.28)",
-        glow: "0 10px 24px -6px rgba(99,102,241,.5)",
-        "glow-sm": "0 6px 16px -6px rgba(99,102,241,.5)",
+        "card-hover": "0 2px 6px rgba(16,24,40,.06), 0 20px 40px -16px rgba(6,81,44,.28)",
+        glow: "0 10px 24px -6px rgba(6,81,44,.5)",
+        "glow-sm": "0 6px 16px -6px rgba(6,81,44,.5)",
       },
       keyframes: {
         "fade-in": {

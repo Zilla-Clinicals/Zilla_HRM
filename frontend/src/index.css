@@ -11,15 +11,15 @@
   body {
     @apply text-slate-700 antialiased;
     font-feature-settings: "cv11", "ss01";
-    /* Layered, fixed app canvas:
-       1) a faint indigo dot-grid for texture
-       2) soft corner glows
+    /* Layered, fixed app canvas (Zilla mint/green):
+       1) a faint green dot-grid for texture
+       2) soft mint corner glows
        3) a gently tinted base so white cards have depth */
     background:
-      radial-gradient(circle at 1px 1px, rgba(79, 70, 229, 0.07) 1px, transparent 0) 0 0 / 24px 24px,
-      radial-gradient(1100px 560px at 100% -6%, rgba(199, 210, 254, 0.55) 0%, transparent 55%),
-      radial-gradient(900px 520px at -6% 6%, rgba(233, 213, 255, 0.5) 0%, transparent 52%),
-      linear-gradient(180deg, #f5f6fb 0%, #eceefb 100%);
+      radial-gradient(circle at 1px 1px, rgba(6, 81, 44, 0.06) 1px, transparent 0) 0 0 / 24px 24px,
+      radial-gradient(1100px 560px at 100% -6%, rgba(200, 224, 213, 0.55) 0%, transparent 55%),
+      radial-gradient(900px 520px at -6% 6%, rgba(233, 244, 238, 0.5) 0%, transparent 52%),
+      linear-gradient(180deg, #f5faf8 0%, #eaf3ee 100%);
     background-attachment: fixed;
   }
   ::selection {
