@@ -15,7 +15,7 @@ export const CATEGORY_LABELS: Record<GoalCategory, string> = {
 };
 
 export const CATEGORY_ACCENT: Record<GoalCategory, string> = {
-  performance: "from-brand-500 to-indigo-500",
+  performance: "from-brand-600 to-brand-400",
   development: "from-emerald-500 to-teal-500",
   business: "from-amber-500 to-orange-500",
   other: "from-slate-400 to-slate-500",

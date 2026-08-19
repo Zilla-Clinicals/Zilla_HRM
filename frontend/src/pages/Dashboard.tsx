@@ -108,13 +108,13 @@ function HrDashboard() {
             <StatTile
               label="Submitted"
               value={`${dash.submitted_assignments}/${dash.total_assignments}`}
-              accent="from-brand-500 to-indigo-500"
+              accent="from-brand-600 to-brand-400"
               icon="✎"
             />
             <StatTile
               label="Average score"
               value={dash.average_score !== null ? `${dash.average_score.toFixed(1)}/100` : "—"}
-              accent="from-accent-500 to-fuchsia-500"
+              accent="from-accent-500 to-accent-400"
               icon="★"
             />
             <StatTile
@@ -209,9 +209,9 @@ function OrgOverviewSection({ org }: { org: OrgOverview }) {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
         <StatTile label="Active" value={String(org.active_employees)} accent="from-emerald-500 to-teal-500" icon="●" />
-        <StatTile label="Employees" value={String(org.total_employees)} accent="from-brand-500 to-indigo-500" icon="◆" />
+        <StatTile label="Employees" value={String(org.total_employees)} accent="from-brand-600 to-brand-400" icon="◆" />
         <StatTile label="Pending" value={String(org.pending_employees)} accent="from-amber-500 to-orange-500" icon="◷" />
-        <StatTile label="Managers" value={String(org.managers)} accent="from-accent-500 to-fuchsia-500" icon="★" />
+        <StatTile label="Managers" value={String(org.managers)} accent="from-accent-500 to-accent-400" icon="★" />
         <StatTile label="Teams" value={String(org.teams)} accent="from-sky-500 to-cyan-500" icon="◍" />
         <StatTile label="New hires (90d)" value={String(org.new_hires_90d)} accent="from-rose-500 to-pink-500" icon="✦" />
       </div>
@@ -219,7 +219,7 @@ function OrgOverviewSection({ org }: { org: OrgOverview }) {
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="card p-5">
           <h3 className="mb-3 text-sm font-semibold text-slate-700">Headcount by team</h3>
-          <BreakdownBars items={org.headcount_by_team} total={org.active_employees} color="#4f46e5" />
+          <BreakdownBars items={org.headcount_by_team} total={org.active_employees} color="#3f8a63" />
         </div>
         <div className="card p-5">
           <h3 className="mb-3 text-sm font-semibold text-slate-700">Employment type</h3>
@@ -227,7 +227,7 @@ function OrgOverviewSection({ org }: { org: OrgOverview }) {
         </div>
         <div className="card p-5">
           <h3 className="mb-3 text-sm font-semibold text-slate-700">Gender</h3>
-          <BreakdownBars items={org.gender_breakdown} total={org.active_employees} color="#a855f7" />
+          <BreakdownBars items={org.gender_breakdown} total={org.active_employees} color="#f9955a" />
         </div>
       </div>
     </div>
