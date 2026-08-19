@@ -33,6 +33,7 @@ from app.schemas.surveys import (
     SurveyResultsOut,
     SurveyUpdate,
 )
+from app.services import audit
 
 router = APIRouter(prefix="/api/surveys", tags=["surveys"])
 
@@ -123,6 +124,15 @@ async def create_survey(
         created_by=user.id,
     )
     db.add(survey)
+    await db.flush()  # assign survey.id for the audit entry
+    await audit.record(
+        db,
+        actor_user_id=user.id,
+        action="survey.create",
+        target_type="survey",
+        target_id=survey.id,
+        detail={"title": survey.title, "anonymous": survey.anonymous},
+    )
     await db.commit()
     await db.refresh(survey)
     base = await _survey_out(db, survey)
@@ -338,8 +348,17 @@ async def assign_survey(
             )
         ).all()
     )
-    for eid in targets - existing:
+    new_targets = targets - existing
+    for eid in new_targets:
         db.add(SurveyAssignment(survey_id=survey_id, employee_id=eid))
+    await audit.record(
+        db,
+        actor_user_id=user.id,
+        action="survey.assign",
+        target_type="survey",
+        target_id=survey_id,
+        detail={"added": len(new_targets)},
+    )
     await db.commit()
     await db.refresh(survey)
     return await _survey_out(db, survey)
@@ -359,6 +378,13 @@ async def open_survey(
     if an == 0:
         raise HTTPException(status.HTTP_409_CONFLICT, "Assign recipients first")
     survey.status = "open"
+    await audit.record(
+        db,
+        actor_user_id=user.id,
+        action="survey.open",
+        target_type="survey",
+        target_id=survey_id,
+    )
     await db.commit()
     await db.refresh(survey)
     return await _survey_out(db, survey)
@@ -373,6 +399,13 @@ async def close_survey(
     survey = await _load_survey(db, survey_id)
     await _assert_manage(user, survey)
     survey.status = "closed"
+    await audit.record(
+        db,
+        actor_user_id=user.id,
+        action="survey.close",
+        target_type="survey",
+        target_id=survey_id,
+    )
     await db.commit()
     await db.refresh(survey)
     return await _survey_out(db, survey)
@@ -515,6 +548,16 @@ async def respond(
                 )
             )
     assignment.completed = True
+    await audit.record(
+        db,
+        # Preserve anonymity — never attribute a response to a user on an
+        # anonymous survey, even in the audit trail.
+        actor_user_id=None if survey.anonymous else user.id,
+        action="survey.respond",
+        target_type="survey",
+        target_id=survey_id,
+        detail={"anonymous": survey.anonymous},
+    )
     await db.commit()
 
 

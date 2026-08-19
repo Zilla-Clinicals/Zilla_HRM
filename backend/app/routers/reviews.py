@@ -408,6 +408,14 @@ async def submit_review(
         )
 
     await submit_assignment(db, cycle=cycle, assignment=a, summary=payload.summary_comment)
+    await audit.record(
+        db,
+        actor_user_id=user.id,
+        action="review.submit",
+        target_type="assignment",
+        target_id=a.id,
+        detail={"cycle_id": a.cycle_id, "subject_employee_id": a.subject_employee_id},
+    )
     await db.commit()
     await db.refresh(a)
     return AssignmentOut.model_validate(a)
@@ -560,6 +568,14 @@ async def submit_self_assessment(
             )
         a.self_status = ReviewStatus.submitted
         a.self_submitted_at = datetime.now(UTC)
+        await audit.record(
+            db,
+            actor_user_id=user.id,
+            action="self_assessment.submit",
+            target_type="assignment",
+            target_id=a.id,
+            detail={"cycle_id": a.cycle_id},
+        )
     if payload.summary_comment is not None:
         a.self_comment = payload.summary_comment
     await db.commit()

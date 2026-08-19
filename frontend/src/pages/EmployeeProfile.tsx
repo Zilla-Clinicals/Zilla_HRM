@@ -41,6 +41,7 @@ export function EmployeeProfile() {
   );
   const { toast, confirm } = useFeedback();
   const [editing, setEditing] = useState(false);
+  const [tab, setTab] = useState<"about" | "goals" | "documents" | "reviews">("about");
   const [photoKey, setPhotoKey] = useState(0);
   const [photoBusy, setPhotoBusy] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -169,6 +170,33 @@ export function EmployeeProfile() {
         </div>
       </div>
 
+      {/* Tabs — the bio sits under its own "About" tab (HR/management view) */}
+      <div className="flex gap-1 overflow-x-auto border-b border-slate-200">
+        {(
+          [
+            ["about", "About"],
+            ["goals", "Goals"],
+            ["documents", "Documents"],
+            ["reviews", "Reviews"],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setTab(key)}
+            className={`relative shrink-0 px-4 py-2.5 text-sm font-medium transition-colors ${
+              tab === key ? "text-brand-700" : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            {label}
+            {tab === key && (
+              <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-brand-600" />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {tab === "about" && (
       <div className="grid gap-6 lg:grid-cols-3">
         <Section title="Personal">
           <Field label="Date of birth" value={dob} />
@@ -200,18 +228,19 @@ export function EmployeeProfile() {
           <Field label="Relationship" value={emp.emergency_contact_relationship} />
         </Section>
       </div>
+      )}
 
-      {/* Goals */}
-      <GoalsPanel
-        employeeId={emp.id}
-        canEdit={me?.employee?.id === emp.id}
-        heading="Goals"
-      />
+      {tab === "goals" && (
+        <GoalsPanel
+          employeeId={emp.id}
+          canEdit={me?.employee?.id === emp.id}
+          heading="Goals"
+        />
+      )}
 
-      {/* Documents */}
-      <EmployeeDocuments employeeId={emp.id} canManage={isHr} />
+      {tab === "documents" && <EmployeeDocuments employeeId={emp.id} canManage={isHr} />}
 
-      {/* Review history */}
+      {tab === "reviews" && (
       <div>
         <h2 className="mb-3 text-sm font-semibold text-slate-700">Review history</h2>
         {!history || history.length === 0 ? (
@@ -239,6 +268,7 @@ export function EmployeeProfile() {
           </div>
         )}
       </div>
+      )}
 
       {editing && emp && (
         <EditModal
