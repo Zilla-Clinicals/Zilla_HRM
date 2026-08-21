@@ -16,22 +16,26 @@ export default {
         ],
       },
       colors: {
-        // Zilla Clinicals brand — deep forest green (see zillaclinicals.com).
-        // Anchors 50/100/400/600/700/800 are exact colors lifted from the site
-        // + logo; the rest are derived tints for a smooth scale.
+        // Zilla Clinicals brand — official HR palette: deep teal-green #052925
+        // (=800) and sage #75a793 (=400) are the exact brand anchors; the other
+        // steps are derived so the scale stays smooth and legible. White text is
+        // only legible on 600+ (600=5.0, 700=7.9, 800=15.5:1), so buttons/sidebar
+        // use those; 400/500 are for fills/accents, not text backgrounds.
         brand: {
-          50: "#f3f9f6",
-          100: "#e9f4ee",
-          200: "#c8e0d5",
-          300: "#9dc7b5",
-          400: "#77a692",
-          500: "#3f8a63",
-          600: "#06512c",
-          700: "#0c4820",
-          800: "#0d2611",
-          900: "#08210c",
+          50: "#f1f6f4",
+          100: "#dce9e4",
+          200: "#c1d7ce",
+          300: "#a1c3b6",
+          400: "#75a793",
+          500: "#44967c",
+          600: "#297c67",
+          700: "#155c4e",
+          800: "#052925",
+          900: "#031715",
         },
-        // Zilla accent — peach/apricot (the "Contact Us" CTA + section eyebrows).
+        // Zilla accent — peach/apricot #fcb07e (official). Pair with DARK text
+        // (black on peach = 11.6:1; white on peach = 1.8:1 fails), so peach is
+        // used for highlights/eyebrows/badges, not white-text buttons.
         accent: {
           300: "#ffd9bf",
           400: "#fcb07e",
@@ -40,20 +44,20 @@ export default {
         },
       },
       backgroundImage: {
-        "brand-gradient": "linear-gradient(135deg, #0c4820 0%, #06512c 55%, #3f8a63 100%)",
-        "brand-gradient-soft": "linear-gradient(135deg, #f3f9f6 0%, #e9f4ee 100%)",
+        "brand-gradient": "linear-gradient(135deg, #297c67 0%, #14544a 50%, #052925 100%)",
+        "brand-gradient-soft": "linear-gradient(135deg, #f1f6f4 0%, #dce9e4 100%)",
         "app-bg":
-          "radial-gradient(1200px 600px at 100% -10%, #f3f9f6 0%, transparent 55%), radial-gradient(900px 500px at -10% 10%, #e9f4ee 0%, transparent 50%)",
-        "sidebar-gradient": "linear-gradient(180deg, #0d2611 0%, #0c4820 100%)",
+          "radial-gradient(1200px 600px at 100% -10%, #f1f6f4 0%, transparent 55%), radial-gradient(900px 500px at -10% 10%, #dce9e4 0%, transparent 50%)",
+        "sidebar-gradient": "linear-gradient(180deg, #0a4038 0%, #052925 100%)",
         shimmer:
           "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%)",
       },
       boxShadow: {
         soft: "0 1px 2px rgba(16,24,40,.04), 0 4px 16px rgba(16,24,40,.06)",
         card: "0 1px 3px rgba(16,24,40,.05), 0 12px 32px -14px rgba(16,24,40,.14)",
-        "card-hover": "0 2px 6px rgba(16,24,40,.06), 0 20px 40px -16px rgba(6,81,44,.28)",
-        glow: "0 10px 24px -6px rgba(6,81,44,.5)",
-        "glow-sm": "0 6px 16px -6px rgba(6,81,44,.5)",
+        "card-hover": "0 2px 6px rgba(16,24,40,.06), 0 20px 40px -16px rgba(5,41,37,.30)",
+        glow: "0 10px 24px -6px rgba(20,80,68,.5)",
+        "glow-sm": "0 6px 16px -6px rgba(20,80,68,.5)",
       },
       keyframes: {
         "fade-in": {
