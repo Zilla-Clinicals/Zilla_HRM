@@ -6,6 +6,7 @@ import type { AuditEntry } from "../shared/types";
 const ACTION_LABELS: Record<string, string> = {
   "user.invite": "Invited user",
   "user.resend_invite": "Resent invite",
+  "user.reset_link": "Issued password reset link",
   "user.update": "Updated user",
   "user.deactivate": "Deactivated user",
   "cycle.create": "Created cycle",

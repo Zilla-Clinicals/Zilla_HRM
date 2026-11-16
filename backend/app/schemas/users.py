@@ -63,6 +63,14 @@ class InviteOut(BaseModel):
     invite_link: str | None = None
 
 
+class ResetLinkOut(BaseModel):
+    user_id: int
+    email: EmailStr
+    expires_at: datetime
+    # Only populated when EMAIL_PROVIDER=console (or the send failed).
+    reset_link: str | None = None
+
+
 class UserAdminUpdate(BaseModel):
     role: Role | None = None
     is_active: bool | None = None

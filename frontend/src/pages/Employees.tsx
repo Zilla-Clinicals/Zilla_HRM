@@ -8,7 +8,13 @@ import { PhotoAvatar } from "../components/PhotoAvatar";
 import { EmployeeStatusBadge, ErrorText, Modal } from "../components/ui";
 import { api } from "../lib/apiClient";
 import { useApi } from "../lib/useApi";
-import type { Employee, EmployeeStatus, InviteResult, Role } from "../shared/types";
+import type {
+  Employee,
+  EmployeeStatus,
+  InviteResult,
+  ResetLinkResult,
+  Role,
+} from "../shared/types";
 
 type StatusFilter = "all" | EmployeeStatus;
 
@@ -21,7 +27,11 @@ export function Employees() {
   const [busyId, setBusyId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [linkModal, setLinkModal] = useState<{ name: string; link: string } | null>(null);
+  const [linkModal, setLinkModal] = useState<{
+    kind: "invite" | "reset";
+    name: string;
+    link: string;
+  } | null>(null);
 
   const byId = useMemo(
     () => new Map((employees ?? []).map((e) => [e.id, e])),
@@ -78,10 +88,39 @@ export function Employees() {
         } catch {
           /* clipboard may be blocked; the modal still shows the link to copy */
         }
-        setLinkModal({ name: e.full_name, link: res.invite_link });
+        setLinkModal({ kind: "invite", name: e.full_name, link: res.invite_link });
       }
     } catch (err) {
       toast("error", err instanceof Error ? err.message : "Could not resend invite");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const copyResetLink = async (e: Employee) => {
+    const ok = await confirm({
+      title: `Generate a password reset link for ${e.full_name}?`,
+      message:
+        "They'll get a one-time link (valid 24 hours) to set a new password. Any earlier reset link stops working.",
+      confirmLabel: "Generate link",
+    });
+    if (!ok) return;
+    setBusyId(e.id);
+    try {
+      const res = await api.post<ResetLinkResult>(`/api/users/${e.user_id}/reset-link`);
+      if (res.reset_link) {
+        try {
+          await navigator.clipboard.writeText(res.reset_link);
+          toast("success", `Reset link for ${e.full_name} copied to clipboard.`);
+        } catch {
+          /* clipboard may be blocked; the modal still shows the link to copy */
+        }
+        setLinkModal({ kind: "reset", name: e.full_name, link: res.reset_link });
+      } else {
+        toast("success", `Password reset link emailed to ${res.email}.`);
+      }
+    } catch (err) {
+      toast("error", err instanceof Error ? err.message : "Could not generate reset link");
     } finally {
       setBusyId(null);
     }
@@ -212,6 +251,15 @@ export function Employees() {
                         )}
                         {isHr && !isSelf && e.status === "active" && (
                           <button
+                            className="text-brand-600 hover:underline disabled:opacity-50"
+                            disabled={busyId === e.id}
+                            onClick={() => copyResetLink(e)}
+                          >
+                            Reset password link
+                          </button>
+                        )}
+                        {isHr && !isSelf && e.status === "active" && (
+                          <button
                             className="text-red-600 hover:underline disabled:opacity-50"
                             disabled={busyId === e.id}
                             onClick={() => setActive(e, false)}
@@ -239,10 +287,15 @@ export function Employees() {
       )}
 
       {linkModal && (
-        <Modal title="Invite link" onClose={() => setLinkModal(null)}>
+        <Modal
+          title={linkModal.kind === "reset" ? "Password reset link" : "Invite link"}
+          onClose={() => setLinkModal(null)}
+        >
           <p className="text-sm text-slate-600">
-            Fresh invite link for <span className="font-medium">{linkModal.name}</span> (copied
-            to your clipboard). Any previous link is now invalid.
+            Fresh {linkModal.kind === "reset" ? "password reset" : "invite"} link for{" "}
+            <span className="font-medium">{linkModal.name}</span> (copied to your clipboard).
+            Any previous link is now invalid.
+            {linkModal.kind === "reset" && " It works once and expires in 24 hours."}
           </p>
           <div className="mt-3 break-all rounded-md bg-slate-100 p-3 text-xs text-slate-700">
             {linkModal.link}

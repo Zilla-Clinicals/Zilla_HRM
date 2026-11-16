@@ -1,13 +1,14 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.deps import get_current_user, require_cap
-from app.auth.email import send_invite_email
+from app.auth.email import send_invite_email, send_reset_email
 from app.auth.passwords import hash_password, verify_password
 from app.auth.permissions import Cap, can
+from app.auth.tokens import generate_raw_token, hash_token
 from app.auth.totp import (
     generate_recovery_codes,
     generate_secret,
@@ -19,7 +20,7 @@ from app.config import settings
 from app.db import get_session
 from app.models._base import Role
 from app.models.employees import Employee
-from app.models.users import RecoveryCode, RefreshToken, User
+from app.models.users import PasswordReset, RecoveryCode, RefreshToken, User
 from app.schemas.employees import EmployeeOut
 from app.schemas.users import (
     ChangePasswordIn,
@@ -27,6 +28,7 @@ from app.schemas.users import (
     InviteOut,
     MeOut,
     MeUpdate,
+    ResetLinkOut,
     TwoFactorDisableIn,
     TwoFactorEnableIn,
     TwoFactorEnableOut,
@@ -275,6 +277,75 @@ async def resend_invite(
         invite_link = f"{settings.app_base_url}/accept-invite?token={raw_token}"
     return InviteOut(
         user_id=user.id, email=user.email, role=user.role, invite_link=invite_link
+    )
+
+
+# Admin-issued reset links live longer than self-service ones (1h) because the
+# admin has to relay them to the user by hand.
+ADMIN_RESET_TTL_HOURS = 24
+
+
+@router.post("/{user_id}/reset-link", response_model=ResetLinkOut)
+async def generate_reset_link(
+    user_id: int,
+    admin: User = Depends(require_cap(Cap.MANAGE_PEOPLE)),
+    db: AsyncSession = Depends(get_session),
+):
+    """Issue a fresh one-time password-reset link for an existing user.
+
+    Mirrors resend-invite: the link is emailed, and also returned in the response
+    when email is in console mode (or the send failed) so HR can share it directly.
+    Any earlier unused reset links for that user are invalidated."""
+    target = await db.get(User, user_id)
+    if not target:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
+    if target.password_hash is None:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "This user hasn't accepted their invite yet — resend the invite instead",
+        )
+    if not target.is_active:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "Reactivate this user before resetting their password"
+        )
+    # A reset link is effectively account takeover, so elevated accounts can only
+    # be reset by someone who could also grant that role.
+    if target.role in (Role.admin, Role.executive) and not can(admin.role, Cap.MANAGE_ROLES):
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, "You cannot reset passwords for executive or admin users"
+        )
+
+    now = datetime.now(UTC)
+    for old in (
+        await db.scalars(
+            select(PasswordReset).where(
+                PasswordReset.user_id == target.id, PasswordReset.consumed_at.is_(None)
+            )
+        )
+    ).all():
+        old.consumed_at = now  # burn previous links so only the newest works
+
+    raw = generate_raw_token()
+    expires_at = now + timedelta(hours=ADMIN_RESET_TTL_HOURS)
+    db.add(PasswordReset(user_id=target.id, token_hash=hash_token(raw), expires_at=expires_at))
+    await audit.record(
+        db,
+        actor_user_id=admin.id,
+        action="user.reset_link",
+        target_type="user",
+        target_id=target.id,
+        detail={"email": target.email},
+    )
+    await db.commit()
+    sent = send_reset_email(
+        target.email, raw, ttl_hours=ADMIN_RESET_TTL_HOURS, by_admin=True
+    )
+
+    reset_link = None
+    if settings.email_provider != "resend" or not sent:
+        reset_link = f"{settings.app_base_url}/reset-password?token={raw}"
+    return ResetLinkOut(
+        user_id=target.id, email=target.email, reset_link=reset_link, expires_at=expires_at
     )
 
 

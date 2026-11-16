@@ -54,12 +54,20 @@ def send_invite_email(to: str, raw_token: str) -> bool:
     return _send(to, "You're invited to Zilla Clinicals HRM", html)
 
 
-def send_reset_email(to: str, raw_token: str) -> bool:
+def send_reset_email(
+    to: str, raw_token: str, *, ttl_hours: int = 1, by_admin: bool = False
+) -> bool:
     link = f"{settings.app_base_url}/reset-password?token={raw_token}"
+    intro = (
+        "An administrator has issued a password reset link for your Zilla Clinicals HRM account."
+        if by_admin
+        else "We received a request to reset your Zilla Clinicals HRM password."
+    )
+    expiry = "1 hour" if ttl_hours == 1 else f"{ttl_hours} hours"
     html = (
-        f"<p>We received a request to reset your Zilla Clinicals HRM password.</p>"
+        f"<p>{intro}</p>"
         f'<p><a href="{link}">Reset your password</a>.</p>'
         f"<p>Or paste this link: {link}</p>"
-        f"<p>This link expires in 1 hour. If you didn't request this, ignore this email.</p>"
+        f"<p>This link expires in {expiry}. If you didn't expect this, ignore this email.</p>"
     )
     return _send(to, "Reset your Zilla Clinicals HRM password", html)

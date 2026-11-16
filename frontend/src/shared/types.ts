@@ -428,6 +428,13 @@ export interface InviteResult {
   invite_link: string | null;
 }
 
+export interface ResetLinkResult {
+  user_id: number;
+  email: string;
+  expires_at: string;
+  reset_link: string | null;
+}
+
 export interface AuditEntry {
   id: number;
   actor_user_id: number | null;
